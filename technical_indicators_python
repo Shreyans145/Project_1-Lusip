@@ -1,0 +1,56 @@
+def MACD(df,a,b,c):
+    """function to calculate MACD
+       typical values a = 12; b =26, c =9"""
+    
+    df["MA_Fast"]=df["Adj Close"].ewm(span=a,min_periods=a).mean()
+    df["MA_Slow"]=df["Adj Close"].ewm(span=b,min_periods=b).mean()
+    df["MACD"]=df["MA_Fast"]-df["MA_Slow"]
+    df["Signal"]=df["MACD"].ewm(span=c,min_periods=c).mean()
+    df.dropna(inplace=True)
+    return df
+
+
+
+def ATR(df,n):
+    "function to calculate True Range and Average True Range"
+    df['H-L']=abs(df['High']-df['Low'])
+    df['H-PC']=abs(df['High']-df['Adj Close'].shift(1))
+    df['L-PC']=abs(df['Low']-df['Adj Close'].shift(1))
+    df['TR']=df[['H-L','H-PC','L-PC']].max(axis=1)
+    df['ATR'] = df['TR'].rolling(n).mean()#rolling mean of TR is ATR
+    df = df.drop(['H-L','H-PC','L-PC'],axis=1,inplace = True)
+    return df
+    
+    
+    
+    def bollingerband(df):
+    "function to calculate upper and lowe bands"
+    df['Bollinger_high'] = df['Adj Close'].rolling(window = 20).mean() + 2*df['Adj Close'].rolling(window = 20).std()
+    df['Bollinger_low'] = df['Adj Close'].rolling(window = 20).mean() - 2*df['Adj Close'].rolling(window = 20).std()
+    df['Bollinger_middle'] = df['Adj Close'].rolling(window = 20).mean()
+    return df
+    
+    
+    def RSI(df):
+    "function to calculate RSI ,assume period to be 14 buyt could be anything"
+    rsi_period = 14
+    change = df['Adj Close'].diff(1)
+    gain  = change.mask(change<0,0)#basically whichever have loss itll put gain as zero
+    loss = change.mask(change>0,0)#basically whichever have gain,it will put loss as zero
+    avg_gain = gain.ewm(com = rsi_period - 1,min_periods = rsi_period).mean()
+    avg_loss = loss.ewm(com = rsi_period -1 ,min_periods = rsi_period).mean()
+    RS = abs(avg_gain/avg_loss)
+    RSI = 100 - 1/(1+RS) 
+    df['RSI'] = pd.Series(RSI)
+    return df
+    
+    
+    
+    
+    def ADX(df):
+    df['DM-'] = np.where( df['High'] - df['High'].shift(1) < df['Low'].shift(1) - df['Low'],df['Low'].shift(1) - df['Low'],0)
+    df['DM+'] = np.where( df['High'] - df['High'].shift(1) > df['Low'].shift(1) - df['Low'],df['High'] - df['High'].shift(1),0)
+    df['DX'] = df['DM+'] - df['DM-']/df['DM+'] + df['DM-']
+    df['ADX'] = (df['DX'].rolling(window = 5,min_periods = 5).mean())*100
+    df.drop(['DM+','DM-','DX'],axis = 1,inplace = True)
+    return df
