@@ -23,7 +23,7 @@ def ATR(df,n):
     
     
     
-    def bollingerband(df):
+def bollingerband(df):
     "function to calculate upper and lowe bands"
     df['Bollinger_high'] = df['Adj Close'].rolling(window = 20).mean() + 2*df['Adj Close'].rolling(window = 20).std()
     df['Bollinger_low'] = df['Adj Close'].rolling(window = 20).mean() - 2*df['Adj Close'].rolling(window = 20).std()
@@ -31,7 +31,7 @@ def ATR(df,n):
     return df
     
     
-    def RSI(df):
+def RSI(df):
     "function to calculate RSI ,assume period to be 14 buyt could be anything"
     rsi_period = 14
     change = df['Adj Close'].diff(1)
@@ -47,7 +47,7 @@ def ATR(df,n):
     
     
     
-    def ADX(df):
+def ADX(df):
     df['DM-'] = np.where( df['High'] - df['High'].shift(1) < df['Low'].shift(1) - df['Low'],df['Low'].shift(1) - df['Low'],0)
     df['DM+'] = np.where( df['High'] - df['High'].shift(1) > df['Low'].shift(1) - df['Low'],df['High'] - df['High'].shift(1),0)
     df['DX'] = df['DM+'] - df['DM-']/df['DM+'] + df['DM-']
